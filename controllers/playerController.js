@@ -1,9 +1,87 @@
-const Player = require('../models/Player');
+const Player = require('../models/player');
 const { validationResult } = require('express-validator');
+const { Op } = require('sequelize');
 
 exports.getAllPlayers = async (req, res) => {
-  const players = await Player.findAll();
-  res.json(players);
+  try {
+    const players = await Player.findAll();
+    res.json(players);
+  } catch (error) {
+    console.error('Error getting players:', error);
+    res.status(500).json({ error: 'Error getting players' });
+  }
+};
+
+exports.searchPlayers = async (req, res) => {
+  try {
+    const { name, club, position } = req.query;
+    const whereClause = {};
+
+    if (name) {
+      whereClause.name = {
+        [Op.like]: `%${name}%`
+      };
+    }
+
+    if (club) {
+      whereClause.club = {
+        [Op.like]: `%${club}%`
+      };
+    }
+
+    if (position) {
+      whereClause.position = position;
+    }
+
+    const players = await Player.findAll({
+      where: whereClause
+    });
+
+    res.json(players);
+  } catch (error) {
+    console.error('Error searching players:', error);
+    res.status(500).json({ error: 'Error searching players' });
+  }
+};
+
+exports.exportPlayersCSV = async (req, res) => {
+  try {
+    const { name, club, position } = req.query;
+    const whereClause = {};
+
+    if (name) {
+      whereClause.name = {
+        [Op.like]: `%${name}%`
+      };
+    }
+
+    if (club) {
+      whereClause.club = {
+        [Op.like]: `%${club}%`
+      };
+    }
+
+    if (position) {
+      whereClause.position = position;
+    }
+
+    const players = await Player.findAll({
+      where: whereClause
+    });
+
+    // Crear CSV
+    let csv = 'id,name,age,nationality,club,position,overall\n';
+    players.forEach(player => {
+      csv += `${player.id},${player.name},${player.age},${player.nationality},${player.club},${player.position},${player.overall}\n`;
+    });
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=jugadores.csv');
+    res.send(csv);
+  } catch (error) {
+    console.error('Error exporting players:', error);
+    res.status(500).json({ error: 'Error exporting players' });
+  }
 };
 
 exports.createPlayer = async (req, res) => {

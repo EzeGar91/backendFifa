@@ -1,9 +1,16 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "dev:watch": "nodemon --watch . --ext js,json --exec \"node app.js\"",
+    "dev:debug": "nodemon --inspect app.js",
+    "setup": "node scripts/createDatabase.js",
+    "seed": "node scripts/seedDatabase.js",
+    "setup:dev": "npm run setup && npm run seed && npm run dev"
   },
   "keywords": [],
   "author": "",
