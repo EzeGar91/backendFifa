@@ -1,12 +1,15 @@
 const express = require('express');
-const app = express();
 const sequelize = require('./config/db');
 const playerRoutes = require('./routes/playerRoutes');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 // Middleware
+const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
+
 
 // Logging middleware para desarrollo
 if (process.env.NODE_ENV !== 'production') {

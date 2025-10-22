@@ -2,14 +2,14 @@ const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME || 'futbol_db',
-  process.env.DB_USER || 'root',
-  process.env.DB_PASSWORD || '',
+  'fifa_players',
+  'root',
+  'asd123',
   {
-    host: process.env.DB_HOST || 'localhost',
+    host: 'localhost',
     dialect: 'mysql',
-    port: process.env.DB_PORT || 3306,
-    logging: process.env.NODE_ENV === 'development' ? console.log : false
+    port: 3306,
+    logging: console.log
   }
 );
 
