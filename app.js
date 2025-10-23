@@ -1,6 +1,8 @@
 const express = require('express');
 const sequelize = require('./config/db');
 const playerRoutes = require('./routes/playerRoutes');
+const authRoutes = require('./routes/authRoutes');
+const { authenticateToken } = require('./middleware/auth');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
@@ -20,7 +22,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Routes
-app.use('/api/players', playerRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/players', authenticateToken, playerRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

@@ -7,19 +7,18 @@ exports.getAllPlayers = async (req, res) => {
     const players = await Player.findAll({
       attributes: [
         'id',
-        'long_name',
+        'name',
         'age',
-        'nationality_name',
-        'club_name',
-        'player_positions',
+        'nationality',
+        'club',
+        'position',
         'overall',
-        'potential',
-        'value_eur',
-        'wage_eur',
-        'height_cm',
-        'weight_kg',
-        'preferred_foot',
-        'work_rate'
+        'pace',
+        'shooting',
+        'passing',
+        'dribbling',
+        'defending',
+        'physical'
       ]
     });
     
@@ -49,19 +48,19 @@ exports.searchPlayers = async (req, res) => {
     const whereClause = {};
 
     if (name) {
-      whereClause.long_name = {
+      whereClause.name = {
         [Op.like]: `%${name}%`
       };
     }
 
     if (club) {
-      whereClause.club_name = {
+      whereClause.club = {
         [Op.like]: `%${club}%`
       };
     }
 
     if (position) {
-      whereClause.player_positions = {
+      whereClause.position = {
         [Op.like]: `%${position}%`
       };
     }
@@ -70,19 +69,18 @@ exports.searchPlayers = async (req, res) => {
       where: whereClause,
       attributes: [
         'id',
-        'long_name',
+        'name',
         'age',
-        'nationality_name',
-        'club_name',
-        'player_positions',
+        'nationality',
+        'club',
+        'position',
         'overall',
-        'potential',
-        'value_eur',
-        'wage_eur',
-        'height_cm',
-        'weight_kg',
-        'preferred_foot',
-        'work_rate'
+        'pace',
+        'shooting',
+        'passing',
+        'dribbling',
+        'defending',
+        'physical'
       ]
     });
 
@@ -110,26 +108,25 @@ exports.exportPlayersCSV = async (req, res) => {
     let params = [];
     
     if (name) {
-      whereConditions.push('long_name LIKE ?');
+      whereConditions.push('name LIKE ?');
       params.push(`%${name}%`);
     }
     
     if (club) {
-      whereConditions.push('club_name LIKE ?');
+      whereConditions.push('club LIKE ?');
       params.push(`%${club}%`);
     }
     
     if (position) {
-      whereConditions.push('player_positions LIKE ?');
+      whereConditions.push('position LIKE ?');
       params.push(`%${position}%`);
     }
     
     const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
     
     const query = `
-      SELECT id, long_name, age, nationality_name, club_name, player_positions, 
-             overall, potential, value_eur, wage_eur, height_cm, weight_kg, 
-             preferred_foot, work_rate 
+      SELECT id, name, age, nationality, club, position, 
+             overall, pace, shooting, passing, dribbling, defending, physical 
       FROM players 
       ${whereClause}
     `;
@@ -141,10 +138,10 @@ exports.exportPlayersCSV = async (req, res) => {
     });
 
     // Crear CSV con headers mejorados
-    let csv = 'ID,Nombre Completo,Edad,Nacionalidad,Club,Posición,Overall,Potencial,Valor (EUR),Salario (EUR),Altura (cm),Peso (kg),Pie Preferido,Ritmo de Trabajo\n';
+    let csv = 'ID,Nombre,Edad,Nacionalidad,Club,Posición,Overall,Pace,Shooting,Passing,Dribbling,Defending,Physical\n';
     
     results.forEach(player => {
-      csv += `${player.id},"${player.long_name}",${player.age},"${player.nationality_name}","${player.club_name}","${player.player_positions}",${player.overall},${player.potential || ''},${player.value_eur || ''},${player.wage_eur || ''},${player.height_cm || ''},${player.weight_kg || ''},"${player.preferred_foot || ''}","${player.work_rate || ''}"\n`;
+      csv += `${player.id},"${player.name}",${player.age},"${player.nationality}","${player.club}","${player.position}",${player.overall},${player.pace || ''},${player.shooting || ''},${player.passing || ''},${player.dribbling || ''},${player.defending || ''},${player.physical || ''}\n`;
     });
 
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -169,9 +166,48 @@ exports.createPlayer = async (req, res) => {
 };
 
 exports.getPlayerById = async (req, res) => {
-  const player = await Player.findByPk(req.params.id);
-  if (!player) return res.status(404).json({ error: 'Player not found' });
-  res.json(player);
+  try {
+    const player = await Player.findByPk(req.params.id, {
+      attributes: [
+        'id',
+        'name',
+        'age',
+        'nationality',
+        'club',
+        'position',
+        'overall',
+        'pace',
+        'shooting',
+        'passing',
+        'dribbling',
+        'defending',
+        'physical'
+      ]
+    });
+    
+    if (!player) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Player not found' 
+      });
+    }
+
+    // Agregar headers para mejor visualización
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    
+    res.json({
+      success: true,
+      data: player
+    });
+  } catch (error) {
+    console.error('Error getting player by ID:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Error getting player', 
+      details: error.message 
+    });
+  }
 };
 
 exports.updatePlayer = async (req, res) => {
